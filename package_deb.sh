@@ -9,7 +9,7 @@ install_dir="usr/local/bin"
 init_script_location="etc/init.d"
 
 arch="$(dpkg --print-architecture)"
-pkg_name="${pkg_title}_${version}_${arch}"
+pkg_name="${pkg_title}_${arch}_${version}"
 root="build/$pkg_name"
 control_file="$root/DEBIAN/control"
 

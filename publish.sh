@@ -19,7 +19,7 @@ function _run() {
 ./package_deb.sh
 
 # this version number is not based on any reality, needs to be changed
-ARCH=armhf
+ARCH="$(dpkg --print-architecture)"
 VERSION=0.1.0
 # upload to s3
 cd ./dist

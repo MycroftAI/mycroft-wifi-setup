@@ -35,7 +35,7 @@ import time
 import traceback
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 from SocketServer import TCPServer
-from os.path import dirname, realpath
+from os.path import dirname, realpath, isdir, join
 from shutil import copyfile
 from subprocess import Popen, PIPE, call
 from threading import Thread
@@ -56,6 +56,10 @@ __author__ = 'aatchison and penrods'
 LOG = getLogger("WiFiClient")
 
 SCRIPT_DIR = dirname(realpath(__file__))
+if isdir(join(SCRIPT_DIR, "web")):
+    WEB_DIR = SCRIPT_DIR
+else:
+    WEB_DIR = "/usr/local/share/mycroft-wifi-setup"
 
 WPA_SUPPLICANT = '''#mycroft_p2p_start
 ctrl_interface=/var/run/wpa_supplicant
@@ -186,8 +190,8 @@ class WebServer(Thread):
 
     def run(self):
         LOG.info("Starting Web Server at %s:%s" % self.server.server_address)
-        LOG.info("Serving from: %s" % os.path.join(SCRIPT_DIR, 'web'))
-        os.chdir(os.path.join(SCRIPT_DIR, 'web'))
+        LOG.info("Serving from: %s" % join(WEB_DIR, "web"))
+        os.chdir(join(WEB_DIR, "web"))
         self.server.serve_forever()
         LOG.info("Web Server stopped!")
 

@@ -9,6 +9,7 @@ install_dir="usr/local/bin"
 init_script_location="etc/init.d"
 
 arch="$(dpkg --print-architecture)"
+depends="dnsmasq"
 pkg_name="${pkg_title}-${arch}_${version}-1"
 root="build/$pkg_name"
 control_file="$root/DEBIAN/control"
@@ -24,10 +25,11 @@ cp control "../$control_file"
 cp preinst postinst prerm postrm "../$root/DEBIAN"
 cd ..
 
-sed -i "s/%%VERSION%%/$version/g" $control_file
-sed -i "s/%%ARCH%%/$arch/g" $control_file
+sed -i "s/%%VERSION%%/${version}/g" ${control_file}
+sed -i "s/%%ARCH%%/${arch}/g" ${control_file}
+sed -i "s/%%DEPENDS%%/${depends}/g" ${control_file}
 
 dpkg-deb --build $root
 mv build/$pkg_name.deb dist/
-echo "Moved to dist/$pkg_name.deb"
+echo "Moved to dist/${pkg_name}.deb"
 

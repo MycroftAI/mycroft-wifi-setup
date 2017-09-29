@@ -14,12 +14,19 @@ cd build
 < ../requirements.txt >> requirements.txt
 < ../MANIFEST.in >> mycroft-base-MANIFEST.in
 
-VIRTUALENV_ROOT=${VIRTUALENV_ROOT:-"$HOME/.virtualenvs/mycroft"}
+VIRTUALENV_ROOT=${VIRTUALENV_ROOT:-"$HOME/.virtualenvs/mycroft-wifi-setup"}
+
+# create virtualenv, consistent with virtualenv-wrapper conventions
+if [ ! -d "${VIRTUALENV_ROOT}" ]; then
+   mkdir -p $(dirname "${VIRTUALENV_ROOT}")
+  virtualenv -p python2.7 "${VIRTUALENV_ROOT}"
+fi
+
 source $VIRTUALENV_ROOT/bin/activate
 pip2 install pyinstaller
-
+pip2 install -r ../requirements.txt
 data_args=$(sed '/^ *#/ d' mycroft-base-MANIFEST.in | sed -e 's/^\(recursive\-\)\?include \([^ \n]\+\).*$/--add-data="\2:\2"/gm' | sed -e 's/"\([^*]\+\)\(\*[^:]*\):\1\2"/"\1\2:\1"/gm' | tr '\n' ' ')
-eval extra_data="~/.virtualenvs/mycroft/lib/python2.7/site-packages/pyric/nlhelp/*.help"
+eval extra_data="${VIRTUALENV_ROOT}/lib/python2.7/site-packages/pyric/nlhelp/*.help"
 for i in $extra_data; do
 	data_args="$data_args --add-data=\"$i:pyric/nlhelp/\""
 done

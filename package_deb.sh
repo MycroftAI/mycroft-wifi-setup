@@ -2,10 +2,11 @@
 
 set -eE
 
-version="0.1.0"  # Also change in deb_resources/control
+version="0.1.1"  # Also change in deb_resources/control
 init_script_name="mycroft-wifi-setup-client"
 pkg_title="mycroft-wifi-setup"
 install_dir="usr/local/bin"
+web_dir="usr/local/share/mycroft-wifi-setup/"
 init_script_location="etc/init.d"
 
 arch="$(dpkg --print-architecture)"
@@ -15,10 +16,12 @@ root="build/$pkg_name"
 control_file="$root/DEBIAN/control"
 
 mkdir -p "$root/$install_dir"
+mkdir -p "$root/$web_dir"
 mkdir -p "$root/$init_script_location"
 mkdir -p "$root/DEBIAN"
 
 cp dist/mycroft-wifi-setup-client "$root/$install_dir"
+cp -r web "$root/$web_dir"
 cd deb_resources
 cp init-script "../$root/$init_script_location/$init_script_name"
 cp control "../$control_file"

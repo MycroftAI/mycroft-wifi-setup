@@ -7,7 +7,7 @@ rm -rf build/ dist/
 [ "$1" = "clean" ] && exit 0
 
 mkdir dist
-git clone https://github.com/MycroftAI/mycroft-core build -b remove-wifi-setup --single-branch --depth 1
+git clone https://github.com/MycroftAI/mycroft-core build -b dev --single-branch --depth 1
 cp -r wifisetup build/mycroft/client/
 cd build
 
@@ -24,6 +24,10 @@ fi
 
 source $VIRTUALENV_ROOT/bin/activate
 pip2 install pyinstaller
+# install mycroft-core deps
+pip2 install -r requirements.txt
+
+# install wifi-setup-client deps
 pip2 install -r ../requirements.txt
 data_args=$(sed '/^ *#/ d' mycroft-base-MANIFEST.in | sed -e 's/^\(recursive\-\)\?include \([^ \n]\+\).*$/--add-data="\2:\2"/gm' | sed -e 's/"\([^*]\+\)\(\*[^:]*\):\1\2"/"\1\2:\1"/gm' | tr '\n' ' ')
 eval extra_data="${VIRTUALENV_ROOT}/lib/python2.7/site-packages/pyric/nlhelp/*.help"

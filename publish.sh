@@ -23,7 +23,7 @@ ARCH="$(dpkg --print-architecture)"
 VERSION=0.1.0
 # upload to s3
 cd ./dist
-_run s3cmd -c ${HOME}/.s3cfg.mycroft-artifact-writer sync --acl-public . s3://bootstrap.mycroft.ai/artifacts/apt/daily/${ARCH}/wifi-setup-client/${VERSION}/
+_run s3cmd -c ${HOME}/.s3cfg.mycroft-artifact-writer sync --acl-public . s3://bootstrap.mycroft.ai/artifacts/apt/daily/${ARCH}/mycroft-wifi-setup/${VERSION}/
 echo ${VERSION} > latest
-_run s3cmd -c ${HOME}/.s3cfg.mycroft-artifact-writer put --acl-public ./latest s3://bootstrap.mycroft.ai/artifacts/apt/daily/${ARCH}/wifi-setup-client/latest
+_run s3cmd -c ${HOME}/.s3cfg.mycroft-artifact-writer put --acl-public ./latest s3://bootstrap.mycroft.ai/artifacts/apt/daily/${ARCH}/mycroft-wifi-setup/latest
 

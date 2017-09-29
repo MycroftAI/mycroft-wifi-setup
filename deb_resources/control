@@ -3,6 +3,5 @@ Version: %%VERSION%%
 Section: base
 Priority: optional
 Architecture: %%ARCH%%
-Depends:
 Maintainer: Arron Atchison <arron.atchison@mycroft.ai>
 Description: mycroft-wifi-setup-client

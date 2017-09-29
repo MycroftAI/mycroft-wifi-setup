@@ -27,7 +27,6 @@ a Linux system to be selected by end users.  This is achieved by:
   * selecting the desired wifi within that browser
   * configuring this device based on that selection
 """
-
 import os
 import sys
 import threading
@@ -35,7 +34,6 @@ import time
 import traceback
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 from SocketServer import TCPServer
-from os.path import dirname, realpath
 from shutil import copyfile
 from subprocess import Popen, PIPE, call
 from threading import Thread
@@ -55,7 +53,7 @@ __author__ = 'aatchison and penrods'
 
 LOG = getLogger("WiFiClient")
 
-SCRIPT_DIR = dirname(realpath(__file__))
+SCRIPT_DIR = join(sys._MEIPASS, 'mycroft', 'client', 'wifisetup')
 
 WPA_SUPPLICANT = '''#mycroft_p2p_start
 ctrl_interface=/var/run/wpa_supplicant

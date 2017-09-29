@@ -11,8 +11,8 @@ git clone https://github.com/MycroftAI/mycroft-core build -b dev --single-branch
 cp -r wifisetup build/mycroft/client/
 cd build
 
-< ../requirements.txt >> requirements.txt
-< ../MANIFEST.in >> mycroft-base-MANIFEST.in
+cat ../requirements.txt >> requirements.txt
+cat ../MANIFEST.in >> mycroft-base-MANIFEST.in
 
 VIRTUALENV_ROOT=${VIRTUALENV_ROOT:-"$HOME/.virtualenvs/mycroft-wifi-setup"}
 

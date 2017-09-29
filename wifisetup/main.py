@@ -53,7 +53,7 @@ __author__ = 'aatchison and penrods'
 
 LOG = getLogger("WiFiClient")
 
-SCRIPT_DIR = join(sys._MEIPASS, 'mycroft', 'client', 'wifisetup')
+SCRIPT_DIR = os.path.join(sys._MEIPASS, 'mycroft', 'client', 'wifisetup')
 
 WPA_SUPPLICANT = '''#mycroft_p2p_start
 ctrl_interface=/var/run/wpa_supplicant

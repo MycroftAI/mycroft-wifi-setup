@@ -52,7 +52,7 @@ function initialize_service() {
   chmod a+x /etc/init.d/${NAME}
   update-rc.d ${NAME} defaults
   touch /var/log/${NAME}.log
-  chown %%INSTALL_USER%% /var/log/${NAME}.log
+  chown mycroft /var/log/${NAME}.log
 }
 
 # Start service with init.d script

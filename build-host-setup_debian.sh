@@ -4,4 +4,5 @@ sudo apt-get install -y \
     python-virtualenv \
     python-dev \
     libc-bin \
-    binutils
+    binutils \
+    s3cmd

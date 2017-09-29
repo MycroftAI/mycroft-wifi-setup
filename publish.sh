@@ -2,6 +2,13 @@
 
 set -Ee
 
+function _run() {
+  if [[ "$QUIET" ]]; then
+    echo "$*"
+  else
+    eval "$@"
+  fi
+}
 
 
 # install build requirements

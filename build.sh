@@ -7,7 +7,7 @@ rm -rf build/ dist/
 [ "$1" = "clean" ] && exit 0
 
 mkdir dist
-git clone https://github.com/MycroftAI/mycroft-core build --single-branch --depth 1
+git clone https://github.com/MycroftAI/mycroft-core build -b remove-wifi-setup --single-branch --depth 1
 cp -r wifisetup build/mycroft/client/
 cd build
 

@@ -1,1 +1,4 @@
 recursive-include mycroft/client/wifisetup/web/* *
+recursive-include mycroft/client/wifisetup/web/css/* *
+recursive-include mycroft/client/wifisetup/web/img/* *
+recursive-include mycroft/client/wifisetup/web/js/* *

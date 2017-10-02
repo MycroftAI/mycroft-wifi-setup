@@ -2,13 +2,17 @@
 
 set -eE
 
-version="0.1.0"  # Also change in deb_resources/control
+source ./utils.sh
+
+check_args $@
+
+get_version $@
 init_script_name="mycroft-wifi-setup-client"
 pkg_title="mycroft-wifi-setup"
 install_dir="usr/local/bin"
 init_script_location="etc/init.d"
 
-arch="$(dpkg --print-architecture)"
+get_arch
 depends="dnsmasq"
 pkg_name="${pkg_title}-${arch}_${version}-1"
 root="build/$pkg_name"

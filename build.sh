@@ -2,13 +2,34 @@
 
 set -eE
 
+source ./utils.sh
+check_args $@
+get_version $@
+
 rm -rf build/ dist/
 
 [ "$1" = "clean" ] && exit 0
 
 mkdir dist
 git clone https://github.com/MycroftAI/mycroft-core build -b dev --single-branch --depth 1
+
+if [ "$1" = "release" ]; then
+	tag=release/v$version
+	if ! git tag | grep -q $tag; then
+		echo "WARNING: Could not find tag $tag. Continuing..."
+		sleep 2
+	else
+		echo "Checking out tag $tag..."
+		git checkout $tag -- wifisetup/
+	fi
+fi
+
 cp -r wifisetup build/mycroft/client/
+
+if [ "$1" = "release" ]; then
+	git checkout HEAD -- wifisetup/
+fi
+
 cd build
 
 cat ../requirements.txt >> requirements.txt
@@ -36,3 +57,4 @@ eval pyinstaller -y -n mycroft-wifi-setup-client mycroft/client/wifisetup/main.p
 
 mv dist/mycroft-wifi-setup-client ../dist
 echo "Wrote output executable to dist/mycroft-wifi-setup-client"
+cd ..

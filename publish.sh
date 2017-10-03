@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+TOP=`pwd`
+
 function _run() {
   if [ "$dry_run" ] || [ "$QUIET" ]; then
     echo "$*"
@@ -25,8 +27,11 @@ check_args $@
 # create pyinstall executable
 ./build.sh $1
 
+
+cd ${TOP}
 # create debian package
 ./package_deb.sh $1
+
 
 get_version
 get_arch

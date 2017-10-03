@@ -6,7 +6,9 @@ source ./utils.sh
 
 check_args $@
 
-get_version $@
+version=$(cat ./build/version)
+#get_version $@
+
 init_script_name="mycroft-wifi-setup-client"
 pkg_title="mycroft-wifi-setup"
 install_dir="usr/local/bin"

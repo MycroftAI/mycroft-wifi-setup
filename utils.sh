@@ -11,13 +11,13 @@ check_args() {
 get_version() {
 	if [ "$1" = "release" ]; then
 		version=$(git describe --tags --abbrev=0 | tr -d 'v')
-		version=${version##*/}
+		export version=${version##*/}
 		git checkout release/v${version}
 	else
-		version=$(date +%s)
+		export version=$(date +%s)
 	fi
 }
 
 get_arch() {
-	arch="$(dpkg --print-architecture)"
+	export arch="$(dpkg --print-architecture)"
 }

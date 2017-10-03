@@ -57,4 +57,5 @@ eval pyinstaller -y -n mycroft-wifi-setup-client mycroft/client/wifisetup/main.p
 
 mv dist/mycroft-wifi-setup-client ../dist
 echo "Wrote output executable to dist/mycroft-wifi-setup-client"
+echo ${version} > version
 cd ..

@@ -45,8 +45,7 @@ from wifi import Cell
 from mycroft.client.enclosure.api import EnclosureAPI
 from mycroft.messagebus.client.ws import WebsocketClient
 from mycroft.messagebus.message import Message
-from mycroft.util import connected, wait_while_speaking, is_speaking, \
-    stop_speaking
+from mycroft.util import connected, wait_while_speaking, is_speaking
 from mycroft.util.log import getLogger
 
 __author__ = 'aatchison and penrods'
@@ -531,7 +530,8 @@ class WiFi:
     def stop(self, event=None):
         LOG.info("Stopping access point...")
         if is_speaking():
-            stop_speaking()  # stop any assistance being spoken
+            # stop any assistance being spoken
+            self.ws.emit(Message("mycroft.stop"))
         self._stop_connection_monitor()
         self.ap.down()
         self.enclosure.mouth_reset()  # remove "start.mycroft.ai"

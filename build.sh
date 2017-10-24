@@ -12,6 +12,16 @@ rm -rf build/ dist/
 
 mkdir dist
 git clone https://github.com/MycroftAI/mycroft-core build -b dev --single-branch --depth 1
+if [ "$1" = "release" ]; then
+        echo "Checking out latest core release" ${latest_core_release_version}
+        pushd build
+        git fetch --tags
+        latest_core_release_version="$(basename $(git for-each-ref --format="%(refname:short)" --sort=-authordate --count=1 refs/tags) | sed -e 's/v//g')"
+	git checkout "release/v${latest_core_release_version}"
+        popd
+else
+	echo "building dev version of core"
+fi
 
 if [ "$1" = "release" ]; then
 	tag=release/v$version

@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 check_args() {
-	if ([ "$1" != "dev" ] && [ "$1" != "release" ]) || [ "$#" != "1" ]; then
+	if ([ "$1" != "dev" ] && [ "$1" != "release" ] && [ "$1" != "" ]) || [ "$#" -gt "1" ]; then
 		echo "Usage: $0 [dev|release]"
 		echo "   If not specified, dev is chosen"
 		exit 1

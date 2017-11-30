@@ -1,2 +1,4 @@
-wifi==0.3.8
-pyric==0.1.6
+wifi
+pyric
+websocket-client
+tornado

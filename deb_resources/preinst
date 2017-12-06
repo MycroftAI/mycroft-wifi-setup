@@ -4,53 +4,6 @@ if [[ -f "/etc/init.d/mycroft-wifi-setup-client" ]]; then
 	invoke-rc.d "mycroft-wifi-setup-client" stop
 fi
 
-function save_networks () {
-    perl -00 -ne 'print if /network/ and not /\bMYCROFT\b/' /etc/wpa_supplicant/wpa_supplicant.conf > ${LIST_FILE}
-
-}
-
-function append_wpa () {
-    cat ${LIST_FILE}  >> /etc/wpa_supplicant/wpa_supplicant.conf
-}
-
-
-function reset_wpa () {
-    echo '''#mycroft_p2p_start
-ctrl_interface=/var/run/wpa_supplicant
-driver_param=p2p_device=1
-update_config=1
-device_name=mycroft-holmes-i
-device_type=1-0050F204-1
-p2p_go_intent=10
-p2p_go_ht40=1
-
-network={
-        ssid="MYCROFT"
-        psk="12345678"
-        proto=RSN
-        key_mgmt=WPA-PSK
-        pairwise=CCMP
-        auth_alg=OPEN
-        mode=3
-        disabled=2
-}
-
-network={
-        ssid="MYCROFT"
-        psk="12345678"
-        proto=RSN
-        key_mgmt=WPA-PSK
-        pairwise=CCMP
-        auth_alg=OPEN
-        mode=3
-        disabled=2
-}
-#mycroft_p2p_end
-''' > /etc/wpa_supplicant/wpa_supplicant.conf
-}
-
-export LIST_FILE='/tmp/saved-networks'
-save_networks
-reset_wpa
-append_wpa
-
+if [[ -f "/etc/init.d/mycroft-admin-service" ]]; then
+	invoke-rc.d "mycroft-admin-service" stop
+fi

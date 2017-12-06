@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-if [[ -f "/etc/init.d/mycroft-wifi-setup-client" ]]; then
-	invoke-rc.d "mycroft-wifi-setup-client" stop
+if [[ -f "/etc/init.d/mycroft-admin-service" ]]; then
+	invoke-rc.d "mycroft-admin-service" stop
 fi

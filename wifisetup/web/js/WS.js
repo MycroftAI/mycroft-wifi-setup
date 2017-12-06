@@ -1,21 +1,16 @@
 var WS = {
     ws: null,
-    wsConnected: false,
     listeners: {},
     onOpenListeners: [],
 
     connect: function () {
         this.ws = new WebSocket(Config.wsUrl);
-        this.setWSListeners();
-    },
-
-    setWSListeners: function () {
         this.ws.onmessage = this.onMessage.bind(this);
         this.ws.onopen = this.onOpen.bind(this);
     },
 
     setOnOpenListener: function (cb) {
-        this.onOpenListeners.push(cb);
+        this.onOpenListener = cb;
     },
 
     onMessage: function (evt) {
@@ -28,10 +23,7 @@ var WS = {
     },
 
     onOpen: function () {
-        this.wsConnected = true;
-        this.onOpenListeners.forEach(function (cb) {
-            cb();
-        });
+        this.onOpenListener();
     },
 
     send: function (type, data) {
@@ -43,7 +35,6 @@ var WS = {
 
     close: function () {
         this.ws.close();
-        this.wsConnected = false;
         this.ws = null;
     },
 

@@ -1,20 +1,20 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          mycroft-wifi-setup-client
+# Provides:          mycroft-admin-service
 # Required-Start:    $local_fs $network $named $time $syslog
 # Required-Stop:     $local_fs $network $named $time $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Description:       mycroft-wifi-setup-client
+# Description:       mycroft-admin-service
 ### END INIT INFO
 
 # Ported from https://gist.github.com/naholyr/4275302
 
-SCRIPT=mycroft-wifi-setup-client
+SCRIPT=mycroft-admin-service
 RUNAS=root
 
-PIDFILE=/var/run/mycroft-wifi-setup-client.pid
-LOGFILE=/var/log/mycroft-wifi-setup-client.log
+PIDFILE=/var/run/mycroft-admin-service.pid
+LOGFILE=/var/log/mycroft-admin-service.log
 
 start() {
   if [ -f /var/run/$PIDNAME ] && kill -0 $(cat /var/run/$PIDNAME); then
@@ -45,7 +45,7 @@ uninstall() {
     stop
     rm -f "$PIDFILE"
     echo "Notice: log file is not be removed: '$LOGFILE'" >&2
-    update-rc.d -f mycroft-wifi-setup-client remove
+    update-rc.d -f mycroft-admin-service remove
     rm -fv "$0"
   fi
 }

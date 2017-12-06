@@ -30,17 +30,6 @@ network={
         mode=3
         disabled=2
 }
-
-network={
-        ssid="MYCROFT"
-        psk="12345678"
-        proto=RSN
-        key_mgmt=WPA-PSK
-        pairwise=CCMP
-        auth_alg=OPEN
-        mode=3
-        disabled=2
-}
 #mycroft_p2p_end
 ''' > /etc/wpa_supplicant/wpa_supplicant.conf
 }
@@ -62,8 +51,8 @@ function start_service() {
   invoke-rc.d ${NAME} start
 }
 
-initialize_service "mycroft-wifi-setup-client"
-start_service "mycroft-wifi-setup-client"
+initialize_service "mycroft-admin-service"
+start_service "mycroft-admin-service"
 
 LIST_FILE='/tmp/saved-networks'
 save_networks

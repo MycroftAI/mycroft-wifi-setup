@@ -26,13 +26,13 @@ var WifiSetup = {
         selectedNetword: null,
 
         setListeners: function () {
-            WS.addMessageListener("mycroft.wifi.connected", this.onConnected.bind(this));
-            WS.addMessageListener("mycroft.wifi.scanned", this.onScanned.bind(this));
+            WS.addMessageListener("connection.status", this.onConnectionStatus.bind(this));
+            WS.addMessageListener("wifi.scanned", this.onScanned.bind(this));
         },
 
-        onConnected: function (data) {
+        onConnectionStatus: function (data) {
             if (data.connected) {
-                // NOTE:  Once we send the "mycroft.wifi.stop", the unit will
+                // NOTE:  Once we send the "wifi.stop", the unit will
                 // be shutting down the wifi access point.  So the device
                 // hosting the browser session is probably being disconnected
                 // and hopefully automatically reconnecting to the internet.
@@ -42,7 +42,7 @@ var WifiSetup = {
                 // their device.  That is part of why we are doing this 2 sec
                 // delay.
                 //
-                WS.send("mycroft.wifi.stop");
+                WS.send("wifi.stop");
                 WS.close();
 
                 setTimeout(function () {
@@ -157,7 +157,7 @@ var WifiSetup = {
                 connect.appendChild(imgArrow);
 
                 li.appendChild(connect);
-	    }
+	        }
             li.querySelector(".list-item").classList.remove("show");
             connect.classList.add("show");
             if ('passwordInput' in connect)
@@ -189,23 +189,20 @@ var WifiSetup = {
             this.selectedNetword = network;
             this.ItemDefaultState();
             this.renderConnectItem(network.el);
-        }
-        ,
+        },
 
         sendScan: function () {
             showPanel("loading");
             document.querySelector("#cancelBtn").classList.remove("hide");
-            WS.send("mycroft.wifi.scan");
-        }
-        ,
+            WS.send("wifi.scan");
+        },
 
         /***
          * @param data is a object with ssid and pass
          */
         sendConnect: function (data) {
-            WS.send("mycroft.wifi.connect", data);
-        }
-        ,
+            WS.send("wifi.connect", data);
+        },
 
         clickConnect: function () {
             showPanel("connecting");
@@ -214,17 +211,16 @@ var WifiSetup = {
             };
             if (this.selectedNetword.encrypted) {
                 var pass = this.selectedNetword.el.querySelector("input");
-                network.pass = pass.value;
+                network.password = pass.value;
             }
             this.sendConnect(network);
-        }
-        ,
+        },
 
         cancelSetup: function () {
-            WS.send("mycroft.wifi.stop");
+            WS.send("wifi.stop");
             WS.close();
-        }
-        ,
+            window.location.href = Config.cancelUrl;
+        },
 
         init: function () {
             this.setListeners();
@@ -232,7 +228,7 @@ var WifiSetup = {
             document.querySelector("#connectBtn").addEventListener("click", this.sendScan);
             document.querySelector("#registerBtn").addEventListener("click", function () {
                 setTimeout(function() {
-                    location.href="https://home.mycroft.ai";
+                    location.href=Config.registerUrl;
                 }, 2000);
             });
             document.querySelector("#cancelBtn").addEventListener("click", this.cancelSetup);

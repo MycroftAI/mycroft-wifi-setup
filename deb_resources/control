@@ -4,5 +4,5 @@ Section: base
 Priority: optional
 Architecture: %%ARCH%%
 Depends: %%DEPENDS%%
-Maintainer: Arron Atchison <arron.atchison@mycroft.ai>
-Description: mycroft-wifi-setup-client
+Maintainer: Matthew Scholefield <matthew.scholefield@mycroft.ai>
+Description: mycroft-wifi-setup and mycroft-admin-service

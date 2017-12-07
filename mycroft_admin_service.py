@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 
+import traceback
 import random
 sys.path += ['.']  # noqa
 
@@ -116,6 +117,7 @@ def on_message(client, message):
 
 
 def main():
+    sleep(0.5)
     url = 'ws://127.0.0.1:8181/core'
     print('Starting client on:', url)
     client = WebSocketApp(url=url, on_message=on_message)
@@ -124,4 +126,12 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # Run loop trying to reconnect if there are any issues starting
+    # the websocket
+    while True:
+        try:
+            main()
+        except KeyboardInterrupt:
+            raise
+        except:
+            traceback.print_exc()

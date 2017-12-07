@@ -16,6 +16,7 @@
 # along with Mycroft Core.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
+import encodings.idna  # Needed to make pyinstaller install the encoding
 
 from http.server import SimpleHTTPRequestHandler
 from logging import getLogger

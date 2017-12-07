@@ -21,6 +21,12 @@ create_virtualenv() {
     fi
 }
 
+remove_virtualenv() {
+    if [ -d "$VIRTUALENV_ROOT" ]; then
+        rm -rf $VIRTUALENV_ROOT
+    fi
+}
+
 if found_exe sudo; then SUDO=sudo; fi
 if found_exe apt-get; then
     $SUDO apt-get install -y python3-pip wpasupplicant
@@ -28,7 +34,13 @@ else
     echo "Could not find package manager. Please install: pip3"
 fi
 
+
 find_virtualenv
+
+if [ "$1" = "clean" ]; then
+    remove_virtualenv
+fi
+
 create_virtualenv
 activate_virtualenv
 

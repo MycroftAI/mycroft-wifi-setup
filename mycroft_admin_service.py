@@ -10,7 +10,7 @@ from subprocess import call, Popen, PIPE
 from threading import Thread
 from time import sleep
 from websocket import WebSocketApp
-from .wifisetup import config
+from wifisetup import config
 
 
 def get_resource(name):

@@ -85,7 +85,7 @@ def run_wifi_setup(client, data):
             return
 
         next_event = event_transitions.get(event, event)
-        delay = 0.1 if next_event != event else 30
+        delay = 0.1 if next_event != event else 45
 
         notify.quit_event.clear()
         notify.timer.cancel()

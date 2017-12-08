@@ -1,4 +1,0 @@
-recursive-include wifisetup/web/* *
-recursive-include wifisetup/web/css/* *
-recursive-include wifisetup/web/img/* *
-recursive-include wifisetup/web/js/* *

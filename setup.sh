@@ -1,47 +1,34 @@
 #!/usr/bin/env bash
+# Installs dependencies and Python 3 venv
+# Usage:
+#     ./setup.sh
 
-found_exe() {
-    hash $1 2>/dev/null
-}
-
-find_virtualenv() {
-	VIRTUALENV_ROOT="${VIRTUALENV_ROOT:-${WORKON_HOME:-$HOME/.virtualenvs}/mycroft-wifi-setup}"
-}
-
-activate_virtualenv() {
-    source "$VIRTUALENV_ROOT/bin/activate"
-}
-
-create_virtualenv() {
-    if [ ! -d "$VIRTUALENV_ROOT" ]; then
-        mkdir -p $(dirname "$VIRTUALENV_ROOT")
-        python3 -m venv "$VIRTUALENV_ROOT" --without-pip
-        activate_virtualenv
+create_venv() {
+    local venv=$1
+    if [ ! -d "$venv" ]; then
+        mkdir -p $(dirname "$venv")
+        python3 -m venv "$venv" --without-pip
+        activate_venv
         curl https://bootstrap.pypa.io/get-pip.py | python3
     fi
 }
 
-remove_virtualenv() {
-    if [ -d "$VIRTUALENV_ROOT" ]; then
-        rm -rf $VIRTUALENV_ROOT
-    fi
-}
+source ./utils.sh
 
-if found_exe sudo; then SUDO=sudo; fi
-if found_exe apt-get; then
+if is_command sudo; then SUDO=sudo; fi
+if is_command apt-get; then
     $SUDO apt-get install -y python3-pip wpasupplicant
 else
-    echo "Could not find package manager. Please install: pip3"
+    echo "Could not find package manager. Please install: pip3 wpasupplicant"
 fi
 
-
-find_virtualenv
+venv=$(find_venv)
 
 if [ "$1" = "clean" ]; then
-    remove_virtualenv
+    rm -rf "$venv"
 fi
 
-create_virtualenv
-activate_virtualenv
+create_venv "$venv"
+activate_venv "$venv"
 
 pip3 install -r requirements.txt

@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
+# Runs wifi setup on its own, locally
+# Usage:
+#     ./run.sh [wifi.run|wifi.reset]
 
-find_virtualenv() {
-	VIRTUALENV_ROOT="${VIRTUALENV_ROOT:-${WORKON_HOME:-$HOME/.virtualenvs}/mycroft-wifi-setup}"
-}
-
-find_virtualenv
-
-sudo "$VIRTUALENV_ROOT/bin/python3" ./wifisetup/main.py "$@"
-
+source ./utils.sh
+venv=$(find_venv)
+sudo "$venv/bin/python3" ./wifisetup/main.py "$@"

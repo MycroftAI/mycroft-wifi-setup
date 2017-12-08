@@ -113,7 +113,8 @@ def run_wifi_setup(client, data):
     notify.timer.join()
 
     notify.quit_event.wait()
-    p.terminate()
+    sleep(5)  # Give the wifi setup process time to shutdown of it's own
+    p.terminate()  # In case anything has gone bonkers, terminarte the process
 
 
 def ssh_enable(*_):

@@ -71,7 +71,7 @@ network={
 
 
 def run_wifi(allow_timeout='True'):
-    client = WifiClient(bool(allow_timeout))
+    client = WifiClient(allow_timeout != 'False')
     client.join()
 
 

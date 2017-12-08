@@ -8,7 +8,7 @@ check_args $@
 
 version=$(cat ./build/version)
 
-get_version $@
+#get_version $@
 init_script_name="mycroft-admin-service"
 pkg_title="mycroft-wifi-setup"
 init_script_location="etc/init.d"

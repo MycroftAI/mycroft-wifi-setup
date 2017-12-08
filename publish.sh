@@ -52,7 +52,7 @@ if [[ $1 == "dev" ]]; then
 fi
 
 echo ${channel}
-_run s3cmd -c ${HOME}/.s3cfg.mycroft-artifact-writer sync --acl-public . s3://bootstrap.mycroft.ai/artifacts/apt/${channel}/$arch/mycroft-wifi-setup/$version/
+_run s3cmd -c ${HOME}/.s3cfg.mycroft-artifact-writer sync --acl-public *.deb s3://bootstrap.mycroft.ai/artifacts/apt/${channel}/$arch/mycroft-wifi-setup/$version/
 echo $version > latest
 _run s3cmd -c ${HOME}/.s3cfg.mycroft-artifact-writer put --acl-public ./latest s3://bootstrap.mycroft.ai/artifacts/apt/${channel}/$arch/mycroft-wifi-setup/latest
 

@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 import sys
-
-import traceback
-import random
 sys.path += ['.']  # noqa
 
 import json
-from os.path import join, dirname, realpath
+import traceback
+import random
+from os.path import join, dirname, realpath, isfile
 from subprocess import call, Popen, PIPE
-from threading import Thread
+from threading import Thread, Timer, Event
 from time import sleep
 from websocket import WebSocketApp
-from wifisetup import config
 
 
 def get_resource(name):
@@ -23,6 +21,11 @@ def get_resource(name):
 lang = 'en-us'
 run_in_progress = False
 exe_file = get_resource('mycroft-wifi-setup')
+exe_file = exe_file if isfile(exe_file) else get_resource('wifisetup/main.py')
+
+mock = len(sys.argv) > 1 and sys.argv[1] == 'mock'
+if mock:
+    exe_file = 'wifisetup/mock_main.py'
 
 
 def get_dialog(name):
@@ -37,55 +40,80 @@ def speak_dialog(client, dialog_name):
 
 def show_text(text):
     try:
-        call('echo "mouth.text=' + text + '" > /dev/ttyAMA0', shell=True)
+        if isfile('/dev/ttyAMA0'):
+            call('echo "mouth.text=' + text + '" > /dev/ttyAMA0 &>/dev/null', shell=True)
     except OSError:
         pass
 
 
 def run_wifi_setup(client, data):
+    dialog_events = {
+        'device.not.connected',
+        'device.connected',
+        'ap_device_connected',
+        'ap_device_disconnected',
+        'ap_down'
+    }
+    visual_events = {
+        'device.not.connected': '12345678',
+        'device.connected': 'start.mycroft.ai',
+        'ap_connection_success': ''
+    }
+    event_transitions = {
+        'ap_up': 'device.not.connected',
+        'ap_device_connected': 'device.connected',
+        'ap_device_disconnected': 'device.not.connected',
+        'ap_connection_success': 'exit',
+        'ap_down': 'exit'
+    }
+    all_events = set(list(dialog_events) +
+                     list(visual_events) +
+                     list(event_transitions))
+
     global lang
-    if 'lang' in data:
-        lang = data['lang']
+    lang = data.get('lang', lang)
     allow_timeout = data.get('allow_timeout', True)
     p = Popen([exe_file, 'wifi.run', str(allow_timeout)], stdout=PIPE)
 
+    def notify(event):
+        """Continuously show and speak a message to the user on an event"""
+        print('Notifying event:', event)
+        if event == 'exit':
+            notify.quit_event.set()
+            return
+        if event not in all_events:
+            return
+
+        next_event = event_transitions.get(event, event)
+        delay = 0.1 if next_event != event else 30
+
+        notify.quit_event.clear()
+        notify.timer.cancel()
+        notify.timer = Timer(delay, notify, [next_event])
+        notify.timer.start()
+
+        if event in dialog_events:
+            speak_dialog(client, event)
+        if event in visual_events:
+            show_text(visual_events[event])
+
     def parse_output():
         for line in p.stdout:
-            line = line.decode().strip()
-            dialog_events = {
-                'ap_up', 'ap_device_connected', 'ap_device_disconnected', 'ap_down'
-            }
-            visual_events = {
-                'ap_up': '12345678',
-                'ap_device_connected': 'start.mycroft.ai',
-                'ap_device_disconnected': '12345678'
-            }
-            if line in dialog_events:
-                speak_dialog(client, line)
-            if line in visual_events:
-                show_text(visual_events[line])
-            if line == 'ap_up':
-                parse_output.is_up = True
-            if line == 'ap_connection_success':
-                break
-    parse_output.is_up = False
-    t = Thread(target=parse_output)
-    t.daemon = True
-    t.start()
-    sleep(0.5)
-    if p.poll():
-        speak_dialog(client, 'ap_init_fail')
-        if p.stderr:
-            print(p.stderr.read())
-        return p.poll()
-    try:
-        sleep(3.5)
-        if not parse_output.is_up:
-            speak_dialog(client, 'ap_start_fail')
-        else:
-            p.wait()
-    except:
-        p.terminate()
+            event = line.decode().strip()
+            notify(event)
+        if not notify.quit_event.is_set():
+            notify('ap_down')
+
+    Thread(target=parse_output, daemon=True).start()
+
+    notify.quit_event = Event()
+    notify.quit_event.set()
+    notify.timer = Timer(10, speak_dialog, [client, 'ap_start_fail'])
+    notify.timer.start()
+    notify.timer.join()
+
+    notify.quit_event.wait()
+    p.terminate()
 
 
 def ssh_enable(*_):
@@ -121,6 +149,8 @@ def main():
     url = 'ws://127.0.0.1:8181/core'
     print('Starting client on:', url)
     client = WebSocketApp(url=url, on_message=on_message)
+    if mock:
+        Thread(target=run_wifi_setup, args=[client, {}], daemon=True).start()
     client.run_forever()
     print('Client stopped.')
 

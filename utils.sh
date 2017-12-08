@@ -1,23 +1,21 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
+# Utilities used by multiple scripts
+# Usage:
+#     source ./utils.sh
 
-check_args() {
-	if ([ "$1" != "dev" ] && [ "$1" != "release" ] && [ "$1" != "" ]) || [ "$#" -gt "1" ]; then
-		echo "Usage: $0 [dev|release]"
-		echo "   If not specified, dev is chosen"
-		exit 1
-	fi
+find_arch() {
+	dpkg --print-architecture
 }
 
-get_version() {
-	if [ "$1" = "release" ]; then
-		version=$(git describe --tags --abbrev=0 | tr -d 'v')
-		export version=${version##*/}
-		git checkout release/v${version}
-	else
-		export version=$(date +%s)
-	fi
+is_command() {
+    hash $1 2>/dev/null
 }
 
-get_arch() {
-	export arch="$(dpkg --print-architecture)"
+find_venv() {
+	echo ${VIRTUALENV_ROOT:-${WORKON_HOME:-$HOME/.virtualenvs}/mycroft-wifi-setup}
+}
+
+activate_venv() {
+    echo "Activating $1..."
+    source "$1/bin/activate"
 }

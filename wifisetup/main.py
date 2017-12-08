@@ -96,7 +96,7 @@ def main():
     action = sys.argv[1] if len(sys.argv) > 1 else 'wifi.run'
     try:
         options.get(action, print_usage)(*sys.argv[2:])
-    except SystemExit:
+    except (SystemExit, KeyboardInterrupt):
         raise
     except:
         LOG.exception('Exception in ' + action)

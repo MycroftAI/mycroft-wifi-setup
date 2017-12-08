@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
+# Creates a .deb file in dist/
+# Usage:
+#     ./package_deb.sh VERSION
 
 set -eE
 
 source ./utils.sh
 
-check_args $@
+version=$1
 
-version=$(cat ./build/version)
-
-get_version $@
 init_script_name="mycroft-admin-service"
 pkg_title="mycroft-wifi-setup"
 init_script_location="etc/init.d"
@@ -18,7 +18,7 @@ data_place="usr/local/mycroft"
 install_bin_dir="usr/local/bin"
 bin_to_data="../../../$data_place/$data_folder"
 
-get_arch
+arch=$(find_arch)
 depends="dnsmasq"
 pkg_name="${pkg_title}-${arch}_${version}-1"
 root="build/$pkg_name"
@@ -47,5 +47,6 @@ sed -i "s/%%DEPENDS%%/${depends}/g" ${control_file}
 
 dpkg-deb --build $root
 mv build/$pkg_name.deb dist/
-echo "Moved to dist/${pkg_name}.deb"
+echo "Moved to dist/$pkg_name.deb"
+echo "$pkg_name.deb" > dist/latest
 

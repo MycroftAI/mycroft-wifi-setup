@@ -135,8 +135,8 @@ def on_message(client, message):
     handler = {
         'mycroft.wifi.start': run_wifi_setup,
         'mycroft.wifi.reset': lambda *_: call([exe_file, 'wifi.reset']),
-        'mycroft.ssh.enable': ssh_enable,
-        'mycroft.ssh.disable': ssh_disable,
+        'mycroft.enable.ssh': ssh_enable,
+        'mycroft.disable.ssh': ssh_disable,
     }.get(message['type'])
     if handler:
         if not run_in_progress:

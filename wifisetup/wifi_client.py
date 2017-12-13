@@ -17,6 +17,7 @@
 import os
 import time
 import json
+from ast import literal_eval
 from logging import getLogger
 
 from threading import Thread
@@ -169,7 +170,9 @@ class WifiClient:
         for cell in Cell.all(self.wiface):
             if "x00" in cell.ssid:
                 continue  # ignore hidden networks
-            ssid = cell.ssid
+
+            # Fix UTF-8 characters
+            ssid = literal_eval("b'" + cell.ssid + "'").decode('utf8')
             quality = self.get_quality(cell.quality)
 
             # If there are duplicate network IDs (e.g. repeaters) only

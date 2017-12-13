@@ -17,11 +17,14 @@
 import os
 import time
 import json
+from ast import literal_eval
 from logging import getLogger
 
 from threading import Thread
 from time import sleep
+from unittest.mock import Mock
 
+from os.path import isfile
 from pyric import pyw
 from websocket import WebSocketApp
 from wifi import Cell
@@ -42,12 +45,26 @@ class WifiClient:
         >>> client = WifiClient()  # Starts client
         >>> client.join()
     """
-    def __init__(self, allow_timeout=True):
+    def __init__(self, allow_timeout=True, allow_mock=False):
         self.allow_timeout = allow_timeout
         self.running = False
 
+        self.mock_networks = None
         self.wiface = pyw.winterfaces()[0]
-        self.ap = AccessPoint(self.wiface)
+        try:
+            self.ap = AccessPoint(self.wiface)
+        except RuntimeError:
+            LOG.exception('Error creating access point.')
+            if allow_mock:
+                self.ap = Mock()
+                self.ap.ip = '127.0.0.1'
+                config.no_redirect_url = '127.0.0.1'
+                config.server_url = 'http://127.0.0.1'
+                config.websocket['host'] = '127.0.0.1'
+                config.websocket['url'] = config.generate_url()
+                self.mock_networks = {'adalytic': {'quality': 0.6714285714285714, 'demo': False, 'encrypted': True, 'connected': False}, 'iPhone’s': {'quality': 0.8142857142857143, 'demo': False, 'encrypted': True, 'connected': False}, 'plexpodtech': {'quality': 1.0, 'demo': False, 'encrypted': True, 'connected': False}, 'PlexpodMembers': {'quality': 1.0, 'demo': False, 'encrypted': True, 'connected': False}, 'DIRECT-2c-HP M277 LaserJet': {'quality': 0.8428571428571429, 'demo': False, 'encrypted': True, 'connected': False}, 'PlexpodGuests': {'quality': 1.0, 'demo': False, 'encrypted': True, 'connected': True}}
+            else:
+                raise
         self.client = WebSocketApp(url=config.websocket['url'], on_message=self.on_message)
         Thread(target=self.client.run_forever).start()
         self.server = WebServer(self.ap.ip, 80)
@@ -94,9 +111,15 @@ class WifiClient:
             LOG.exception('Error in wifi client:')
             self.close()
 
+    def get_last_update(self):
+        leases = '/var/lib/misc/dnsmasq.leases'
+        if isfile(leases):
+            return os.path.getmtime(leases)
+        return 0
+
     def monitor_connection(self):
         trigger_event('ap_up')
-        last_mod_time = os.path.getmtime('/var/lib/misc/dnsmasq.leases')
+        last_mod_time = self.get_last_update()
         has_connected = False
         num_failures = 0
         start_time = time.time()
@@ -104,7 +127,7 @@ class WifiClient:
 
         while self.running:
             # do our monitoring...
-            mod_time = os.path.getmtime('/var/lib/misc/dnsmasq.leases')
+            mod_time = self.get_last_update()
             if last_mod_time != mod_time:
                 # Something changed in the dnsmasq lease file -
                 # presumably a (re)new lease
@@ -163,13 +186,20 @@ class WifiClient:
     def scan(self):
         trigger_event('ap_scan')
         LOG.info("Scanning wifi connections...")
+
+        if self.mock_networks:
+            self.notify_server('wifi.scanned', {'networks': self.mock_networks})
+            return
+
         networks = {}
         status = self.get_connection_info()
 
         for cell in Cell.all(self.wiface):
             if "x00" in cell.ssid:
                 continue  # ignore hidden networks
-            ssid = cell.ssid
+
+            # Fix UTF-8 characters
+            ssid = literal_eval("b'" + cell.ssid + "'").decode('utf8')
             quality = self.get_quality(cell.quality)
 
             # If there are duplicate network IDs (e.g. repeaters) only

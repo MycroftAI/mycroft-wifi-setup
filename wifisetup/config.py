@@ -26,5 +26,11 @@ websocket = {
     'port': 8181,
     'route': '/core'
 }
-websocket['url'] = (websocket['protocol'] + websocket['host'] + ':'
-                    + str(websocket['port']) + websocket['route'])
+
+
+def generate_url():
+    return (websocket['protocol'] + websocket['host'] + ':'
+            + str(websocket['port']) + websocket['route'])
+
+
+websocket['url'] = generate_url()

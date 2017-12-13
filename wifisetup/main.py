@@ -70,8 +70,9 @@ network={
 # p2p_end'''
 
 
-def run_wifi(allow_timeout='True'):
-    client = WifiClient(allow_timeout != 'False')
+def run_wifi(allow_timeout='True', allow_mock='False'):
+    client = WifiClient(allow_timeout.lower() != 'false',
+                        allow_mock.lower() != 'false')
     client.join()
 
 

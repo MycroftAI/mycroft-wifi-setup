@@ -122,7 +122,7 @@ class WifiClient:
                 # system has never been setup, in which case we stay up
                 # indefinitely)
                 LOG.info("Auto-shutdown of access point after 5 minutes")
-                self.close()
+                self.cancel()
                 continue
 
             if has_connected:

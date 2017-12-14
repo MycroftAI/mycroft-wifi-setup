@@ -79,6 +79,7 @@ class WifiClient:
 
         # Javascript events
         {
+            'wifi.cancel': self.cancel,
             'wifi.stop': self.close,
             'wifi.scan': self.scan,
             'wifi.connect': self.connect
@@ -249,6 +250,10 @@ class WifiClient:
         status = status or self.get_connection_info()
         state = status.get("wpa_state")
         return status.get("ssid") == ssid and state == "COMPLETED"
+
+    def cancel(self):
+        trigger_event('ap_cancel')
+        self.close()
 
     def close(self):
         trigger_event('ap_down')

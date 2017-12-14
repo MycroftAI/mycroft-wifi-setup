@@ -63,6 +63,7 @@ def run_wifi_setup(client, data):
         'ap_device_connected': 'device.connected',
         'ap_device_disconnected': 'device.not.connected',
         'ap_connection_success': 'exit',
+        'ap_cancel': 'exit',
         'ap_down': 'exit'
     }
     all_events = set(list(dialog_events) +

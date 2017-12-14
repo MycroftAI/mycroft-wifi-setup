@@ -19,7 +19,6 @@ def get_resource(name):
 
 
 lang = 'en-us'
-run_in_progress = False
 exe_file = get_resource('mycroft-wifi-setup')
 exe_file = exe_file if isfile(exe_file) else get_resource('wifisetup/main.py')
 
@@ -128,7 +127,6 @@ def ssh_disable(*_):
 
 
 def on_message(client, message):
-    global run_in_progress
     message = json.loads(message)
     print(message)
 
@@ -139,10 +137,7 @@ def on_message(client, message):
         'mycroft.disable.ssh': ssh_disable,
     }.get(message['type'])
     if handler:
-        if not run_in_progress:
-            run_in_progress = True
-            handler(client, message['data'])
-            run_in_progress = False
+        handler(client, message['data'])
 
 
 def main():

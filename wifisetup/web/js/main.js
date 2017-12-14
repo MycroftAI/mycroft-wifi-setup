@@ -229,7 +229,7 @@ var WifiSetup = {
             document.querySelector("#registerBtn").addEventListener("click", function () {
                 setTimeout(function() {
                     location.href=Config.registerUrl;
-                }, 2000);
+                }, 3000);
             });
             document.querySelector("#cancelBtn").addEventListener("click", this.cancelSetup);
         }

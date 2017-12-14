@@ -72,7 +72,7 @@ def run_wifi_setup(client, data):
     global lang
     lang = data.get('lang', lang)
     allow_timeout = data.get('allow_timeout', True)
-    p = Popen([exe_file, 'wifi.run', str(allow_timeout)], stdout=PIPE)
+    p = Popen([exe_file, 'wifi.run', str(allow_timeout)], stdout=PIPE, stderr=sys.stderr.buffer)
 
     def notify(event):
         """Continuously show and speak a message to the user on an event"""

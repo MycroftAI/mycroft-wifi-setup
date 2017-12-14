@@ -19,7 +19,6 @@ def get_resource(name):
 
 
 lang = 'en-us'
-run_in_progress = False
 exe_file = get_resource('mycroft-wifi-setup')
 exe_file = exe_file if isfile(exe_file) else get_resource('wifisetup/main.py')
 
@@ -73,7 +72,7 @@ def run_wifi_setup(client, data):
     global lang
     lang = data.get('lang', lang)
     allow_timeout = data.get('allow_timeout', True)
-    p = Popen([exe_file, 'wifi.run', str(allow_timeout)], stdout=PIPE)
+    p = Popen([exe_file, 'wifi.run', str(allow_timeout)], stdout=PIPE, stderr=sys.stderr.buffer)
 
     def notify(event):
         """Continuously show and speak a message to the user on an event"""
@@ -128,7 +127,6 @@ def ssh_disable(*_):
 
 
 def on_message(client, message):
-    global run_in_progress
     message = json.loads(message)
     print(message)
 
@@ -139,10 +137,7 @@ def on_message(client, message):
         'mycroft.disable.ssh': ssh_disable,
     }.get(message['type'])
     if handler:
-        if not run_in_progress:
-            run_in_progress = True
-            handler(client, message['data'])
-            run_in_progress = False
+        handler(client, message['data'])
 
 
 def main():

@@ -217,7 +217,7 @@ var WifiSetup = {
         },
 
         cancelSetup: function () {
-            WS.send("wifi.stop");
+            WS.send("wifi.cancel");
             WS.close();
             window.location.href = Config.cancelUrl;
         },

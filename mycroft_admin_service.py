@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import sys
+from signal import SIGINT
+
 sys.path += ['.']  # noqa
 
 import json
@@ -51,7 +53,7 @@ def run_wifi_setup(client, data):
         'device.connected',
         'ap_device_connected',
         'ap_device_disconnected',
-        'ap_down'
+        'ap_cancel'
     }
     visual_events = {
         'device.not.connected': '12345678',
@@ -101,7 +103,7 @@ def run_wifi_setup(client, data):
             event = line.decode().strip()
             notify(event)
         if not notify.quit_event.is_set():
-            notify('ap_down')
+            notify('exit')
 
     Thread(target=parse_output, daemon=True).start()
 
@@ -112,8 +114,9 @@ def run_wifi_setup(client, data):
     notify.timer.join()
 
     notify.quit_event.wait()
-    sleep(5)  # Give the wifi setup process time to shutdown of it's own
-    p.terminate()  # In case anything has gone bonkers, terminarte the process
+    p.send_signal(SIGINT)
+    sleep(10)  # Give the wifi setup process time to shutdown of it's own
+    p.terminate()  # In case anything has gone bonkers, terminate the process
 
 
 def ssh_enable(*_):

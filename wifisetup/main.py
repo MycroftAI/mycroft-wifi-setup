@@ -34,6 +34,7 @@ sys.path += ['.']  # noqa
 import logging
 from subprocess import call
 from wifisetup.wifi_client import WifiClient
+from wifisetup.util import trigger_event
 from wifisetup import config
 
 root = logging.getLogger()
@@ -71,8 +72,12 @@ network={
 
 
 def run_wifi(allow_timeout='True'):
-    client = WifiClient(allow_timeout != 'False')
-    client.join()
+    try:
+        client = WifiClient(allow_timeout != 'False')
+        client.join()
+    except:
+        LOG.exception('Error running wifi client')
+        trigger_event('ap_error')
 
 
 def reset_wifi():

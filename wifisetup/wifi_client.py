@@ -47,15 +47,26 @@ class WifiClient:
         self.allow_timeout = allow_timeout
         self.running = False
 
+        self.last_lease_mod = self.get_last_lease_mod()
         self.wiface = pyw.winterfaces()[0]
         self.ap = AccessPoint(self.wiface)
         self.client = WebSocketApp(url=config.websocket['url'], on_message=self.on_message)
         Thread(target=self.client.run_forever).start()
-        self.server = WebServer(self.ap.ip, 80)
-        self.server.start()
-        self.run_thread = Thread(target=self.run)
-        self.run_thread.daemon = True
+        self.run_thread = Thread(target=self.run, daemon=True)
+
+        self.server = None
+        try:
+            self.server = WebServer(self.ap.ip, 80)
+            self.server.start()
+        except RuntimeError:
+            self.close()
+            raise
+
         self.run_thread.start()
+
+    def get_last_lease_mod(self):
+        """When a new user connects, the lease modification time changes"""
+        return os.path.getmtime('/var/lib/misc/dnsmasq.leases')
 
     def join(self):
         """Waits for wifi setup to complete"""
@@ -72,7 +83,6 @@ class WifiClient:
     def on_message(self, _, message: str):
         """Handle communication from javascript"""
         message = json.loads(message)
-        LOG.debug('Received message: %s' % message)
 
         def invalid_message(**_):
             pass
@@ -98,7 +108,6 @@ class WifiClient:
 
     def monitor_connection(self):
         trigger_event('ap_up')
-        last_mod_time = os.path.getmtime('/var/lib/misc/dnsmasq.leases')
         has_connected = False
         num_failures = 0
         start_time = time.time()
@@ -106,15 +115,15 @@ class WifiClient:
 
         while self.running:
             # do our monitoring...
-            mod_time = os.path.getmtime('/var/lib/misc/dnsmasq.leases')
-            if last_mod_time != mod_time:
+            mod_time = self.get_last_lease_mod()
+            if self.last_lease_mod != mod_time:
                 # Something changed in the dnsmasq lease file -
                 # presumably a (re)new lease
                 if not has_connected:
                     trigger_event('ap_device_connected')
                 has_connected = True
                 num_failures = 0
-                last_mod_time = mod_time
+                self.last_lease_mod = mod_time
                 start_time = time.time()  # reset start time after connection
 
             if time.time() - start_time > 60 * 5 and self.allow_timeout:
@@ -144,7 +153,7 @@ class WifiClient:
                         has_connected = False
                 else:
                     num_failures = 0
-            sleep(5)  # wait a bit to prevent thread from hogging CPU
+            sleep(2)  # wait a bit to prevent thread from hogging CPU
 
     def is_ARP_filled(self):
         out = cli_no_output('/usr/sbin/arp', '-n')["stdout"]
@@ -156,7 +165,7 @@ class WifiClient:
                 if "(incomplete)" in o:
                     # ping the IP to get the ARP table entry reloaded
                     ip_disconnected = o.split(" ")[0]
-                    cli_no_output('/bin/ping', '-c', '1', '-W', '3',
+                    cli_no_output('/bin/ping', '-c', '1', '-W', '1',
                                   ip_disconnected)
                 else:
                     return True  # something on subnet is connected!
@@ -197,6 +206,7 @@ class WifiClient:
         return float(values[0]) / float(values[1])
 
     def connect(self, ssid, password=None):
+        LOG.info('Connecting to ' + ssid + '...')
         connected = self.is_connected(ssid)
 
         if connected:
@@ -261,9 +271,8 @@ class WifiClient:
         LOG.info('Shutting down access point...')
         self.ap.close()
         LOG.info('Sending shutdown signal...')
-        self.server.server.shutdown()
-        LOG.info('Waiting for server to shut down...')
-        self.server.join()
+        if self.server:
+            self.server.shutdown()
         LOG.info('Closing websocket...')
         self.client.close()
         LOG.info("Wifi client stopped!")

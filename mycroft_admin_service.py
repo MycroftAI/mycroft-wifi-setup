@@ -53,19 +53,20 @@ def run_wifi_setup(client, data):
         'device.connected',
         'ap_device_connected',
         'ap_device_disconnected',
-        'ap_cancel'
+        'ap_cancel',
+        'ap_error'
     }
     visual_events = {
         'device.not.connected': '12345678',
         'device.connected': 'start.mycroft.ai',
-        'ap_connection_success': ''
     }
     event_transitions = {
         'ap_up': 'device.not.connected',
         'ap_device_connected': 'device.connected',
         'ap_device_disconnected': 'device.not.connected',
         'ap_connection_success': 'exit',
-        'ap_down': 'exit'
+        'ap_down': 'exit',
+        'ap_error': 'exit'
     }
     all_events = set(list(dialog_events) +
                      list(visual_events) +
@@ -81,6 +82,7 @@ def run_wifi_setup(client, data):
         print('Notifying event:', event)
         if event == 'exit':
             notify.quit_event.set()
+            show_text('')
             return
         if event not in all_events:
             return
@@ -109,7 +111,7 @@ def run_wifi_setup(client, data):
 
     notify.quit_event = Event()
     notify.quit_event.set()
-    notify.timer = Timer(10, speak_dialog, [client, 'ap_start_fail'])
+    notify.timer = Timer(10, speak_dialog, [client, 'ap_error'])
     notify.timer.start()
     notify.timer.join()
 

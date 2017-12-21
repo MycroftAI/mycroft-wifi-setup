@@ -8,7 +8,7 @@ create_venv() {
     if [ ! -d "$venv" ]; then
         mkdir -p $(dirname "$venv")
         python3 -m venv "$venv" --without-pip
-        activate_venv
+        activate_venv "$venv"
         curl https://bootstrap.pypa.io/get-pip.py | python3
     fi
 }

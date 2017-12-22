@@ -82,27 +82,17 @@ class WebServer(Thread):
 
         self.daemon = True
         self.dir = os.path.join(root, 'wifisetup', 'web')
-        for retry_count in range(15):
-            try:
-                self.server = TCPServer((host, port), CaptiveHTTPRequestHandler)
-                break
-            except OSError:
-                LOG.warning('Another web server already running! Trying again...')
-                sleep(1)
-        else:
-            self.server = None
-            raise RuntimeError('Could not create webserver!')
+        try:
+            self.server = TCPServer((host, port), CaptiveHTTPRequestHandler)
+        except OSError:
+            raise RuntimeError('Could not create webserver! Port already in use.')
 
     def shutdown(self):
-        if not self.server:
-            return
         Thread(target=self.server.shutdown, daemon=True).start()
         self.server.server_close()
         self.join(0.5)
 
     def run(self):
-        if not self.server:
-            return
         LOG.info("Starting Web Server at %s:%s" % self.server.server_address)
         LOG.info("Serving from: %s" % self.dir)
         os.chdir(self.dir)

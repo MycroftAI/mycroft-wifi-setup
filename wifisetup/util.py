@@ -23,6 +23,7 @@ LOG = getLogger(__name__)
 
 def trigger_event(name):
     """Send a message to the caller"""
+    LOG.info('Event: ' + name)
     print(name, file=sys.stdout, flush=True)
 
 

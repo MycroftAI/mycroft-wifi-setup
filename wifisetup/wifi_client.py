@@ -153,7 +153,7 @@ class WifiClient:
                         has_connected = False
                 else:
                     num_failures = 0
-            sleep(2)  # wait a bit to prevent thread from hogging CPU
+            sleep(5)  # wait a bit to prevent thread from hogging CPU
 
     def is_ARP_filled(self):
         out = cli_no_output('/usr/sbin/arp', '-n')["stdout"]
@@ -165,7 +165,7 @@ class WifiClient:
                 if "(incomplete)" in o:
                     # ping the IP to get the ARP table entry reloaded
                     ip_disconnected = o.split(" ")[0]
-                    cli_no_output('/bin/ping', '-c', '1', '-W', '1',
+                    cli_no_output('/bin/ping', '-c', '1', '-W', '3',
                                   ip_disconnected)
                 else:
                     return True  # something on subnet is connected!

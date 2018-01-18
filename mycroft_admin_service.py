@@ -152,7 +152,7 @@ def system_update(client, data):
             package = "mycroft-picroft"
 
     call('apt-get update', shell=True)
-    call('apt-get install ' + package + ' -y', shell=True)
+    call(['apt-get', 'install', package, '-y'])
 
 
 def ssh_enable(*_):

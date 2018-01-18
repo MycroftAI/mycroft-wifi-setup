@@ -42,7 +42,8 @@ def speak_dialog(client, dialog_name):
 def show_text(text):
     try:
         if isfile('/dev/ttyAMA0'):
-            call('echo "mouth.text=' + text + '" > /dev/ttyAMA0 &>/dev/null', shell=True)
+            call('echo "mouth.text=' + text + '" > /dev/ttyAMA0 &>/dev/null',
+                 shell=True)
     except OSError:
         pass
 
@@ -75,7 +76,8 @@ def run_wifi_setup(client, data):
     global lang
     lang = data.get('lang', lang)
     allow_timeout = data.get('allow_timeout', True)
-    p = Popen([exe_file, 'wifi.run', str(allow_timeout)], stdout=PIPE, stderr=sys.stderr.buffer)
+    p = Popen([exe_file, 'wifi.run', str(allow_timeout)],
+              stdout=PIPE, stderr=sys.stderr.buffer)
 
     def notify(event):
         """Continuously show and speak a message to the user on an event"""
@@ -121,12 +123,46 @@ def run_wifi_setup(client, data):
     p.terminate()  # In case anything has gone bonkers, terminate the process
 
 
+def ntp_sync(*_):
+    # Force the system clock to synchronize with internet time servers
+    call('service ntp stop', shell=True)
+    call('ntpd -gq', shell=True)
+    call('service ntp start', shell=True)
+
+
+def system_shutdown(*_):
+    # Turn the system completely off (with no option to inhibit it)
+    call('systemctl poweroff -i', shell=True)
+
+
+def system_reboot(*_):
+    # Shut down and restart the system
+    call('systemctl reboot -i', shell=True)
+
+
+def system_update(client, data):
+    # Force a system package update.  Limited to "mycroft-" packages.
+    package = "mycroft-core"
+    if data and "platform" in data:
+        # Support installing/updating "mycroft-XXX" meta packages,
+        # but limit to know packages to prevent abuse.
+        if data["platform"] == "mark-1":
+            package = "mycroft-mark-1"
+        elif data["platform"] == "picroft":
+            package = "mycroft-picroft"
+
+    call('apt-get update', shell=True)
+    call('apt-get install ' + package + ' -y', shell=True)
+
+
 def ssh_enable(*_):
+    # Permanently allow SSH access
     call('systemctl enable ssh.service', shell=True)
     call('systemctl start ssh.service', shell=True)
 
 
 def ssh_disable(*_):
+    # Permanently block SSH access from the outside
     call('systemctl stop ssh.service', shell=True)
     call('systemctl disable ssh.service', shell=True)
 
@@ -135,11 +171,20 @@ def on_message(client, message):
     message = json.loads(message)
     print(message)
 
+,  # TODO: Retire the mycroft.XXX messages, keeping for backwards compat
     handler = {
+        'system.wifi.setup': run_wifi_setup,
         'mycroft.wifi.start': run_wifi_setup,
+        'system.wifi.reset': lambda *_: call([exe_file, 'wifi.reset']),
         'mycroft.wifi.reset': lambda *_: call([exe_file, 'wifi.reset']),
+        'system.ssh.enable': ssh_enable,
         'mycroft.enable.ssh': ssh_enable,
+        'system.ssh.disable': ssh_disable,
         'mycroft.disable.ssh': ssh_disable,
+        'system.ntp.sync': ntp_sync,
+        'system.reboot': system_reboot,
+        'system.shutdown': system_shutdown,
+        'system.update': system_update,
     }.get(message['type'])
     if handler:
         handler(client, message['data'])
@@ -147,6 +192,8 @@ def on_message(client, message):
 
 def main():
     sleep(0.5)
+
+    # Connect to the default websocket used by mycroft-core
     url = 'ws://127.0.0.1:8181/core'
     print('Starting client on:', url)
     client = WebSocketApp(url=url, on_message=on_message)

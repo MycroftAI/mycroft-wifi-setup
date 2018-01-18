@@ -171,7 +171,7 @@ def on_message(client, message):
     message = json.loads(message)
     print(message)
 
-,  # TODO: Retire the mycroft.XXX messages, keeping for backwards compat
+    # TODO: Retire the mycroft.XXX messages, keeping for backwards compat
     handler = {
         'system.wifi.setup': run_wifi_setup,
         'mycroft.wifi.start': run_wifi_setup,

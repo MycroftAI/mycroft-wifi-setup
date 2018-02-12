@@ -167,6 +167,15 @@ def ssh_disable(*_):
     call('systemctl disable ssh.service', shell=True)
 
 
+def reset_system(*_):
+    call("""mkdir /opt/mycroft/safety &&
+    mv /opt/mycroft/skills/skill-pairing /opt/mycroft/safety &&
+    rm -rf /opt/mycroft/skills/* &&
+    mv /opt/mycroft/safety/skill-pairing /opt/mycroft/skills &&
+    rm -rf /opt/mycroft/safety""", shell=True)
+    call([exe_file, 'wifi.reset'])
+
+
 def on_message(client, message):
     message = json.loads(message)
     print(message)
@@ -175,8 +184,8 @@ def on_message(client, message):
     handler = {
         'system.wifi.setup': run_wifi_setup,
         'mycroft.wifi.start': run_wifi_setup,
-        'system.wifi.reset': lambda *_: call([exe_file, 'wifi.reset']),
-        'mycroft.wifi.reset': lambda *_: call([exe_file, 'wifi.reset']),
+        'system.wifi.reset': reset_system,
+        'mycroft.wifi.reset': reset_system,
         'system.ssh.enable': ssh_enable,
         'mycroft.enable.ssh': ssh_enable,
         'system.ssh.disable': ssh_disable,

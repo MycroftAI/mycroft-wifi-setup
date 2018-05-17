@@ -173,6 +173,8 @@ def reset_system(*_):
     rm -rf /opt/mycroft/skills/* &&
     mv /opt/mycroft/safety/skill-pairing /opt/mycroft/skills &&
     rm -rf /opt/mycroft/safety""", shell=True)
+    call("rm -rf /opt/mycroft/.skills-repo", shell=True)
+    call("rm -rf /home/mycroft/.mycroft/.mycroft-skills", shell=True)
     call([exe_file, 'wifi.reset'])
 
 

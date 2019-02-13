@@ -168,13 +168,22 @@ def ssh_disable(*_):
 
 
 def reset_system(*_):
+    # Remove all skills except Pairing (which is needed after wipe)
     call("""mkdir /opt/mycroft/safety &&
-    mv /opt/mycroft/skills/skill-pairing /opt/mycroft/safety &&
+    mv /opt/mycroft/skills/mycroft-pairing.mycroftai /opt/mycroft/safety &&
     rm -rf /opt/mycroft/skills/* &&
-    mv /opt/mycroft/safety/skill-pairing /opt/mycroft/skills &&
-    rm -rf /opt/mycroft/safety""", shell=True)
+    mv /opt/mycroft/safety/mycroft-pairing.mycroftai /opt/mycroft/skills &&
+    rm -rf /opt/mycroft/safety &&
+    rm -f /opt/mycroft/skills/mycroft-pairing.mycroftai/settings.json
+    """, shell=True)
+
+    # Zap the old skill info caches
     call("rm -rf /opt/mycroft/.skills-repo", shell=True)
-    call("rm -rf /home/mycroft/.mycroft/.mycroft-skills", shell=True)
+
+    # Zap user data
+    call("rm -rf /home/mycroft/.mycroft", shell=True)
+
+    # Reset network settings
     call([exe_file, 'wifi.reset'])
 
 

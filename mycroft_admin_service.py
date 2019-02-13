@@ -169,7 +169,7 @@ def ssh_disable(*_):
 
 def reset_system(*_):
     # Remove all skills except Pairing (which is needed after wipe)
-    call("""mkdir /opt/mycroft/safety &&
+    call("""mkdir -p /opt/mycroft/safety &&
     mv /opt/mycroft/skills/mycroft-pairing.mycroftai /opt/mycroft/safety &&
     rm -rf /opt/mycroft/skills/* &&
     mv /opt/mycroft/safety/mycroft-pairing.mycroftai /opt/mycroft/skills &&
@@ -177,8 +177,9 @@ def reset_system(*_):
     rm -f /opt/mycroft/skills/mycroft-pairing.mycroftai/settings.json
     """, shell=True)
 
-    # Zap the old skill info caches
+    # Zap the MSM info and cache files
     call("rm -rf /opt/mycroft/.skills-repo", shell=True)
+    call("rm -f /opt/mycroft/skills/.msm", shell=True)
 
     # Zap user data
     call("rm -rf /home/mycroft/.mycroft", shell=True)

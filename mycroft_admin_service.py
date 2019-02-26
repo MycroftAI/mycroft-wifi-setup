@@ -143,8 +143,8 @@ def system_reboot(*_):
 
 
 def update_only_mycroft():
-    call(['apt-get', 'update', '-o', 'Dir::Etc::sourcelist="sources.list.d/repo.mycroft.ai.list"',
-          '-o', 'Dir::Etc::sourceparts="-"', '-o', 'APT::Get::List-Cleanup="0"'])
+    call(['apt-get', 'update', '-o', 'Dir::Etc::sourcelist=sources.list.d/repo.mycroft.ai.list',
+          '-o', 'Dir::Etc::sourceparts=-', '-o', 'APT::Get::List-Cleanup=0'])
 
 
 def get_core_version():

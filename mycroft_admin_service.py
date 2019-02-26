@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+
 from signal import SIGINT
 
 sys.path += ['.']  # noqa
@@ -8,7 +9,7 @@ import json
 import traceback
 import random
 from os.path import join, dirname, realpath, isfile
-from subprocess import call, Popen, PIPE
+from subprocess import call, Popen, PIPE, check_output
 from threading import Thread, Timer, Event
 from time import sleep
 from websocket import WebSocketApp
@@ -123,11 +124,12 @@ def run_wifi_setup(client, data):
     p.terminate()  # In case anything has gone bonkers, terminate the process
 
 
-def ntp_sync(*_):
+def ntp_sync(client, data):
     # Force the system clock to synchronize with internet time servers
     call('service ntp stop', shell=True)
     call('ntpd -gq', shell=True)
     call('service ntp start', shell=True)
+    client.send(json.dumps({'type': 'system.ntp.sync.complete'}))
 
 
 def system_shutdown(*_):
@@ -140,19 +142,48 @@ def system_reboot(*_):
     call('systemctl reboot -i', shell=True)
 
 
-def system_update(client, data):
-    # Force a system package update.  Limited to "mycroft-" packages.
-    package = "mycroft-core"
-    if data and "platform" in data:
-        # Support installing/updating "mycroft-XXX" meta packages,
-        # but limit to know packages to prevent abuse.
-        if data["platform"] == "mark-1":
-            package = "mycroft-mark-1"
-        elif data["platform"] == "picroft":
-            package = "mycroft-picroft"
+def update_only_mycroft():
+    call(['apt-get', 'update', '-o', 'Dir::Etc::sourcelist="sources.list.d/repo.mycroft.ai.list"',
+          '-o', 'Dir::Etc::sourceparts="-"', '-o', 'APT::Get::List-Cleanup="0"'])
 
-    call('apt-get update', shell=True)
-    call(['apt-get', 'install', package, '-y'])
+
+def get_core_version():
+    lines = check_output(['dpkg', '--list']).decode().split('\n')
+    try:
+        line = next(i for i in lines if 'mycroft-core' in i)
+        status, name, version, arch, desc = line.split()
+        return version
+    except StopIteration:
+        return ''
+
+
+def get_mycroft_package(data):
+    # Force a system package update.  Limited to "mycroft-" packages.
+    # Support installing/updating "mycroft-XXX" meta packages,
+    # but limit to know packages to prevent abuse.
+    platform = (data or {}).get('platform')
+    if platform == "mark-1":
+        return "mycroft-mark-1"
+    elif platform == "picroft":
+        return "mycroft-picroft"
+    return "mycroft-core"
+
+
+def system_update(client, data):
+    client.send(json.dumps({'type': 'system.update.processing'}))
+    update_only_mycroft()
+    version_before = get_core_version()
+    call(['apt-get', 'install', get_mycroft_package(data), '-y'])
+    version_after = get_core_version()
+    has_updated = version_before != version_after
+    if has_updated:
+        call(['service', 'mycroft-skills', 'stop'])
+        call(['mycroft-msm', 'default'])
+        call(['service', 'mycroft-skills', 'start'])
+    client.send(json.dumps({
+        'type': 'system.update.complete',
+        'data': {'has_updated': has_updated}
+    }))
 
 
 def ssh_enable(*_):

@@ -124,11 +124,12 @@ def run_wifi_setup(client, data):
     p.terminate()  # In case anything has gone bonkers, terminate the process
 
 
-def ntp_sync(*_):
+def ntp_sync(client, data):
     # Force the system clock to synchronize with internet time servers
     call('service ntp stop', shell=True)
     call('ntpd -gq', shell=True)
     call('service ntp start', shell=True)
+    client.send(json.dumps({'type': 'system.ntp.sync.complete'}))
 
 
 def system_shutdown(*_):

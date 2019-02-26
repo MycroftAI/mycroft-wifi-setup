@@ -146,6 +146,16 @@ def update_only_mycroft():
           '-o', 'Dir::Etc::sourceparts="-"', '-o', 'APT::Get::List-Cleanup="0"'])
 
 
+def get_core_version():
+    lines = check_output(['dpkg', '--list']).decode().split('\n')
+    try:
+        line = next(i for i in lines if 'mycroft-core' in i)
+        status, name, version, arch, desc = line.split()
+        return version
+    except StopIteration:
+        return ''
+
+
 def get_mycroft_package(data):
     # Force a system package update.  Limited to "mycroft-" packages.
     # Support installing/updating "mycroft-XXX" meta packages,
@@ -161,8 +171,16 @@ def get_mycroft_package(data):
 def system_update(client, data):
     client.send(json.dumps({'type': 'system.update.processing'}))
     update_only_mycroft()
+    version_before = get_core_version()
     call(['apt-get', 'install', get_mycroft_package(data), '-y'])
-    client.send(json.dumps({'type': 'system.update.complete'}))
+    version_after = get_core_version()
+    has_updated = version_before != version_after
+    if has_updated:
+        call(['mycroft-msm', 'default'])
+    client.send(json.dumps({
+        'type': 'system.update.complete',
+        'data': {'has_updated': has_updated}
+    }))
 
 
 def ssh_enable(*_):

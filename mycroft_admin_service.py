@@ -148,15 +148,14 @@ def update_only_mycroft():
 
 def get_mycroft_package(data):
     # Force a system package update.  Limited to "mycroft-" packages.
-    package = "mycroft-core"
-    if data and "platform" in data:
-        # Support installing/updating "mycroft-XXX" meta packages,
-        # but limit to know packages to prevent abuse.
-        if data["platform"] == "mark-1":
-            package = "mycroft-mark-1"
-        elif data["platform"] == "picroft":
-            package = "mycroft-picroft"
-    return package
+    # Support installing/updating "mycroft-XXX" meta packages,
+    # but limit to know packages to prevent abuse.
+    platform = (data or {}).get('platform')
+    if platform == "mark-1":
+        return "mycroft-mark-1"
+    elif platform == "picroft":
+        return "mycroft-picroft"
+    return "mycroft-core"
 
 
 def system_update(client, data):

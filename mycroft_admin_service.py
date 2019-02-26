@@ -160,8 +160,10 @@ def get_mycroft_package(data):
 
 
 def system_update(client, data):
+    client.send(json.dumps({'type': 'system.update.processing'}))
     update_only_mycroft()
     call(['apt-get', 'install', get_mycroft_package(data), '-y'])
+    client.send(json.dumps({'type': 'system.update.complete'}))
 
 
 def ssh_enable(*_):

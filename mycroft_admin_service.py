@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+
 from signal import SIGINT
 
 sys.path += ['.']  # noqa
@@ -8,7 +9,7 @@ import json
 import traceback
 import random
 from os.path import join, dirname, realpath, isfile
-from subprocess import call, Popen, PIPE
+from subprocess import call, Popen, PIPE, check_output
 from threading import Thread, Timer, Event
 from time import sleep
 from websocket import WebSocketApp
@@ -140,7 +141,12 @@ def system_reboot(*_):
     call('systemctl reboot -i', shell=True)
 
 
-def system_update(client, data):
+def update_only_mycroft():
+    call(['apt-get', 'update', '-o', 'Dir::Etc::sourcelist="sources.list.d/repo.mycroft.ai.list"',
+          '-o', 'Dir::Etc::sourceparts="-"', '-o', 'APT::Get::List-Cleanup="0"'])
+
+
+def get_mycroft_package(data):
     # Force a system package update.  Limited to "mycroft-" packages.
     package = "mycroft-core"
     if data and "platform" in data:
@@ -150,9 +156,12 @@ def system_update(client, data):
             package = "mycroft-mark-1"
         elif data["platform"] == "picroft":
             package = "mycroft-picroft"
+    return package
 
-    call('apt-get update', shell=True)
-    call(['apt-get', 'install', package, '-y'])
+
+def system_update(client, data):
+    update_only_mycroft()
+    call(['apt-get', 'install', get_mycroft_package(data), '-y'])
 
 
 def ssh_enable(*_):

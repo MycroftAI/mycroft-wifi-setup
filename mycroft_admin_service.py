@@ -177,7 +177,9 @@ def system_update(client, data):
     version_after = get_core_version()
     has_updated = version_before != version_after
     if has_updated:
+        call(['service', 'mycroft-skills', 'stop'])
         call(['mycroft-msm', 'default'])
+        call(['service', 'mycroft-skills', 'start'])
     client.send(json.dumps({
         'type': 'system.update.complete',
         'data': {'has_updated': has_updated}

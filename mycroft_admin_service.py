@@ -169,21 +169,24 @@ def get_mycroft_package(data):
     return "mycroft-core"
 
 
+APT_PLATFORMS = ['mycroft_mark_1']
+
 def system_update(client, data):
-    client.send(json.dumps({'type': 'system.update.processing'}))
-    update_only_mycroft()
-    version_before = get_core_version()
-    call(['apt-get', 'install', get_mycroft_package(data), '-y'])
-    version_after = get_core_version()
-    has_updated = version_before != version_after
-    if has_updated:
-        call(['service', 'mycroft-skills', 'stop'])
-        call(['mycroft-msm', 'default'])
-        call(['service', 'mycroft-skills', 'start'])
-    client.send(json.dumps({
-        'type': 'system.update.complete',
-        'data': {'has_updated': has_updated}
-    }))
+    if data.get('platform', 'unknown') in APT_PLATFORMS:
+        client.send(json.dumps({'type': 'system.update.processing'}))
+        update_only_mycroft()
+        version_before = get_core_version()
+        call(['apt-get', 'install', get_mycroft_package(data), '-y'])
+        version_after = get_core_version()
+        has_updated = version_before != version_after
+        if has_updated:
+            call(['service', 'mycroft-skills', 'stop'])
+            call(['mycroft-msm', 'default'])
+            call(['service', 'mycroft-skills', 'start'])
+        client.send(json.dumps({
+            'type': 'system.update.complete',
+            'data': {'has_updated': has_updated}
+        }))
 
 
 def ssh_enable(*_):

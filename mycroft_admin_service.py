@@ -89,6 +89,8 @@ def run_wifi_setup(client, data):
             return
         if event not in all_events:
             return
+        if event in event_transitions:
+            client.send(json.dumps({'type': 'system.wifi.{}'.format(event)}))
 
         next_event = event_transitions.get(event, event)
         delay = 0.1 if next_event != event else 45

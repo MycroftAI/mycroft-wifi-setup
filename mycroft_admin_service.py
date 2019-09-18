@@ -36,13 +36,25 @@ if mock:
 
 
 def get_dialog(name):
-    with open(get_resource(join('dialog', lang, name + '.dialog'))) as f:
-        return random.choice(list(filter(bool, f.read().split('\n'))))
+    """Get the dialog to be spoken by the device.
+
+    Dialog files often contain more than one entry that say basically the same
+    thing.  Read them all and pick one at random.  After all, variety is the
+    spice of life!
+    """
+    dialog_path = join('dialog', lang, name + '.dialog')
+    with open(get_resource(dialog_path)) as dialog_file:
+        dialog_records = [
+            rec.strip() for rec in dialog_file.readlines() if rec.strip()
+        ]
+        return random.choice(dialog_records)
 
 
 def speak_dialog(client, dialog_name):
-    text = get_dialog(dialog_name)
-    client.send(json.dumps({'type': 'speak', 'data': {'utterance': text}}))
+    """Instruct the device to speak a dialog by issuing a "speak" event."""
+    dialog = get_dialog(dialog_name)
+    message = dict(type='speak', data=dict(utterance=dialog))
+    client.send(json.dumps(message))
 
 
 def show_text(text):

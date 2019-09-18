@@ -8,11 +8,32 @@ sys.path += ['.']  # noqa
 import json
 import traceback
 import random
+from logging import Formatter, getLogger, DEBUG, StreamHandler
 from os.path import join, dirname, realpath, isfile
 from subprocess import call, Popen, PIPE, check_output
 from threading import Thread, Timer, Event
 from time import sleep
 from websocket import WebSocketApp
+
+getLogger()
+_log = getLogger('mycroft_admin_service')
+
+
+def _configure_logger():
+    """Configure logger to write messages to console.
+
+    The admin service writes all STDOUT to /var/log/mycroft_admin_service.log.
+    So writing logs to STDOUT will result in log messages being written there.
+    """
+    _log.setLevel(DEBUG)
+    log_msg_formatter = Formatter(
+        '{asctime} | {levelname:8} | {process:5} | {name} | {message}',
+        style='{'
+    )
+    handler = StreamHandler()
+    handler.setLevel(DEBUG)
+    handler.setFormatter(log_msg_formatter)
+    _log.addHandler(handler)
 
 
 def get_resource(name):
@@ -82,7 +103,7 @@ def run_wifi_setup(client, data):
 
     def notify(event):
         """Continuously show and speak a message to the user on an event"""
-        print('Notifying event:', event)
+        _log.debug('Notifying event: ' + event)
         if event == 'exit':
             notify.quit_event.set()
             show_text('')
@@ -225,9 +246,8 @@ def reset_system(*_):
 
 
 def on_message(client, message):
+    _log.debug('Event message: ' + message)
     message = json.loads(message)
-    print(message)
-
     # TODO: Retire the mycroft.XXX messages, keeping for backwards compat
     handler = {
         'system.wifi.setup': run_wifi_setup,
@@ -252,15 +272,16 @@ def main():
 
     # Connect to the default websocket used by mycroft-core
     url = 'ws://127.0.0.1:8181/core'
-    print('Starting client on:', url)
+    _log.info('Starting message bus client on: ' + url)
     client = WebSocketApp(url=url, on_message=on_message)
     if mock:
         Thread(target=run_wifi_setup, args=[client, {}], daemon=True).start()
     client.run_forever()
-    print('Client stopped.')
+    _log.info('Message bus client stopped.')
 
 
 if __name__ == '__main__':
+    _configure_logger()
     # Run loop trying to reconnect if there are any issues starting
     # the websocket
     while True:

@@ -60,8 +60,8 @@ def speak_dialog(client, dialog_name):
 def show_text(text):
     try:
         if isfile('/dev/ttyAMA0'):
-            call('echo "mouth.text=' + text + '" > /dev/ttyAMA0 &>/dev/null',
-                 shell=True)
+            command = 'echo "mouth.text=\'{}\'" > /dev/ttyAMA0 &>/dev/null'
+            call(command.format(text), shell=True)
     except OSError:
         pass
 

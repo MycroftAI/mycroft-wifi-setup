@@ -268,8 +268,6 @@ def on_message(client, message):
 
 
 def main():
-    sleep(0.5)
-
     # Connect to the default websocket used by mycroft-core
     url = 'ws://127.0.0.1:8181/core'
     _log.info('Starting message bus client on: ' + url)
@@ -282,12 +280,14 @@ def main():
 
 if __name__ == '__main__':
     _configure_logger()
-    # Run loop trying to reconnect if there are any issues starting
-    # the websocket
-    while True:
+    # Loop until a successful connection to the websocket.
+    success = False
+    while not success:
         try:
             main()
         except KeyboardInterrupt:
             raise
         except:
             traceback.print_exc()
+        else:
+            success = True

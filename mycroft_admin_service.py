@@ -6,13 +6,14 @@ from signal import SIGINT
 sys.path += ['.']  # noqa
 
 import json
-import traceback
 import random
+import traceback
 from logging import Formatter, getLogger, DEBUG, StreamHandler
 from os.path import join, dirname, realpath, isfile
 from subprocess import call, Popen, PIPE, check_output
 from threading import Thread, Timer, Event
 from time import sleep
+
 from websocket import WebSocketApp
 
 getLogger()
@@ -128,6 +129,7 @@ def run_wifi_setup(client, data):
     p.send_signal(SIGINT)
     sleep(10)  # Give the wifi setup process time to shutdown of it's own
     p.terminate()  # In case anything has gone bonkers, terminate the process
+    _log.debug('Wifi setup complete.')
 
 
 def ntp_sync(client, data):

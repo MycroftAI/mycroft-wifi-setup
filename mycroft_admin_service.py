@@ -19,23 +19,6 @@ getLogger()
 _log = getLogger('mycroft_admin_service')
 
 
-def _configure_logger():
-    """Configure logger to write messages to console.
-
-    The admin service writes all STDOUT to /var/log/mycroft_admin_service.log.
-    So writing logs to STDOUT will result in log messages being written there.
-    """
-    _log.setLevel(DEBUG)
-    log_msg_formatter = Formatter(
-        '{asctime} | {levelname:8} | {process:5} | {name} | {message}',
-        style='{'
-    )
-    handler = StreamHandler()
-    handler.setLevel(DEBUG)
-    handler.setFormatter(log_msg_formatter)
-    _log.addHandler(handler)
-
-
 def get_resource(name):
     data_dir = dirname(realpath(sys.argv[0]))
     data_dir = getattr(sys, '_MEIPASS', data_dir)
@@ -245,26 +228,31 @@ def reset_system(*_):
     call([exe_file, 'wifi.reset'])
 
 
+# TODO: Retire the mycroft.XXX events when core versions using them are retired
+event_handlers = {
+    'system.wifi.setup': run_wifi_setup,
+    'mycroft.wifi.start': run_wifi_setup,
+    'system.wifi.reset': reset_system,
+    'mycroft.wifi.reset': reset_system,
+    'system.ssh.enable': ssh_enable,
+    'mycroft.enable.ssh': ssh_enable,
+    'system.ssh.disable': ssh_disable,
+    'mycroft.disable.ssh': ssh_disable,
+    'system.ntp.sync': ntp_sync,
+    'system.reboot': system_reboot,
+    'system.shutdown': system_shutdown,
+    'system.update': system_update,
+}
+
+
 def on_message(client, message):
+    """Execute event handler if one is defined for the event type."""
     _log.debug('Event message: ' + message)
     message = json.loads(message)
-    # TODO: Retire the mycroft.XXX messages, keeping for backwards compat
-    handler = {
-        'system.wifi.setup': run_wifi_setup,
-        'mycroft.wifi.start': run_wifi_setup,
-        'system.wifi.reset': reset_system,
-        'mycroft.wifi.reset': reset_system,
-        'system.ssh.enable': ssh_enable,
-        'mycroft.enable.ssh': ssh_enable,
-        'system.ssh.disable': ssh_disable,
-        'mycroft.disable.ssh': ssh_disable,
-        'system.ntp.sync': ntp_sync,
-        'system.reboot': system_reboot,
-        'system.shutdown': system_shutdown,
-        'system.update': system_update,
-    }.get(message['type'])
-    if handler:
-        handler(client, message['data'])
+    event_type = message['type']
+    event_handler = event_handlers.get(event_type)
+    if event_handler is not None:
+        event_handler(client, message['data'])
 
 
 def main():
@@ -276,6 +264,23 @@ def main():
         Thread(target=run_wifi_setup, args=[client, {}], daemon=True).start()
     client.run_forever()
     _log.info('Message bus client stopped.')
+
+
+def _configure_logger():
+    """Configure logger to write messages to console.
+
+    The admin service writes all STDOUT to /var/log/mycroft_admin_service.log.
+    So writing logs to STDOUT will result in log messages being written there.
+    """
+    _log.setLevel(DEBUG)
+    log_msg_formatter = Formatter(
+        '{asctime} | {levelname:8} | {process:5} | {name} | {message}',
+        style='{'
+    )
+    log_handler = StreamHandler()
+    log_handler.setLevel(DEBUG)
+    log_handler.setFormatter(log_msg_formatter)
+    _log.addHandler(log_handler)
 
 
 if __name__ == '__main__':

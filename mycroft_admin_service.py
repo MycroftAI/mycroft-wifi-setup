@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+"""Perform system administration tasks that require root access.
+
+The Mycroft admin service is built-in to Mycroft device images.  It is
+installed on devices as a service that starts at boot time.  This service
+communicates with the message bus in mycroft-core to perform tasks like wifi
+setup, clock setting and rebooting.
+
+Log messages emitted by this service can be found in
+    /var/log/mycroft_admin_service.log
+"""
 import sys
 
 from signal import SIGINT

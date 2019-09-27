@@ -26,8 +26,7 @@ from time import sleep
 
 from websocket import WebSocketApp
 
-getLogger()
-_log = getLogger('mycroft_admin_service')
+LOG = getLogger('mycroft_admin_service')
 
 
 def get_resource(name):
@@ -109,7 +108,7 @@ def run_wifi_setup(client, data):
 
     def notify(event):
         """Continuously show and speak a message to the user on an event"""
-        _log.debug('Notifying event: ' + event)
+        LOG.debug('Notifying event: ' + event)
         if event == 'exit':
             notify.quit_event.set()
             show_text('')
@@ -151,7 +150,7 @@ def run_wifi_setup(client, data):
     p.send_signal(SIGINT)
     sleep(10)  # Give the wifi setup process time to shutdown of it's own
     p.terminate()  # In case anything has gone bonkers, terminate the process
-    _log.debug('Wifi setup complete.')
+    LOG.debug('Wifi setup complete.')
 
 
 def ntp_sync(client, data):
@@ -271,7 +270,7 @@ event_handlers = {
 
 def on_message(client, message):
     """Execute event handler if one is defined for the event type."""
-    _log.debug('Event message: ' + message)
+    LOG.debug('Event message: ' + message)
     message = json.loads(message)
     event_type = message['type']
     event_handler = event_handlers.get(event_type)
@@ -282,21 +281,21 @@ def on_message(client, message):
 def main():
     # Connect to the default websocket used by mycroft-core
     url = 'ws://127.0.0.1:8181/core'
-    _log.info('Starting message bus client on: ' + url)
+    LOG.info('Starting message bus client on: ' + url)
     client = WebSocketApp(url=url, on_message=on_message)
     if mock:
         Thread(target=run_wifi_setup, args=[client, {}], daemon=True).start()
     client.run_forever()
-    _log.info('Message bus client stopped.')
+    LOG.info('Message bus client stopped.')
 
 
-def _configure_logger():
+def configure_logger():
     """Configure logger to write messages to console.
 
     The admin service writes all STDOUT to /var/log/mycroft_admin_service.log.
     So writing logs to STDOUT will result in log messages being written there.
     """
-    _log.setLevel(DEBUG)
+    LOG.setLevel(DEBUG)
     log_msg_formatter = Formatter(
         '{asctime} | {levelname:8} | {process:5} | {name} | {message}',
         style='{'
@@ -304,11 +303,11 @@ def _configure_logger():
     log_handler = StreamHandler()
     log_handler.setLevel(DEBUG)
     log_handler.setFormatter(log_msg_formatter)
-    _log.addHandler(log_handler)
+    LOG.addHandler(log_handler)
 
 
 if __name__ == '__main__':
-    _configure_logger()
+    configure_logger()
     # Loop until a successful connection to the websocket.
     success = False
     while not success:

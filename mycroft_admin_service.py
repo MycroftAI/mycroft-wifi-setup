@@ -172,8 +172,10 @@ def system_reboot(*_):
 
 
 def update_only_mycroft():
-    call(['apt-get', 'update', '-o', 'Dir::Etc::sourcelist=sources.list.d/repo.mycroft.ai.list',
-          '-o', 'Dir::Etc::sourceparts=-', '-o', 'APT::Get::List-Cleanup=0'])
+    call(['apt-get', 'update', '-o',
+          'Dir::Etc::sourcelist=sources.list.d/repo.mycroft.ai.list',
+          '-o', 'Dir::Etc::sourceparts=-', '-o',
+          'APT::Get::List-Cleanup=0'])
 
 
 def get_core_version():
@@ -199,6 +201,7 @@ def get_mycroft_package(data):
 
 
 APT_PLATFORMS = ['mycroft_mark_1']
+
 
 def system_update(client, data):
     if data.get('platform', 'unknown') in APT_PLATFORMS:
@@ -315,7 +318,7 @@ if __name__ == '__main__':
             main()
         except KeyboardInterrupt:
             raise
-        except:
+        except Exception:
             traceback.print_exc()
         else:
             success = True

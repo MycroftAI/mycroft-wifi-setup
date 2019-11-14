@@ -64,5 +64,8 @@ echo $channel
 
 arch=$(find_arch)
 
-s3 put --acl-public "dist/$package" "s3://bootstrap.mycroft.ai/artifacts/apt/$channel/$arch/mycroft-wifi-setup/$version/$package"
-s3 put --acl-public build/latest "s3://bootstrap.mycroft.ai/artifacts/apt/$channel/$arch/mycroft-wifi-setup/latest"
+UPLOAD_PATH="artifacts/apt/${channel}/${arch}/mycroft-wifi-setup/"
+ssh ${REPO_USER}@${REPO_URL} "mkdir -p ${UPLOAD_PATH}/$version"
+scp dist/${package} ${REPO_USER}@${REPO_URL}:${UPLOAD_PATH}/${version}/
+echo ${version} > latest
+scp latest ${REPO_USER}@${REPO_URL}:${UPLOAD_PATH}

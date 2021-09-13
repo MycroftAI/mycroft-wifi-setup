@@ -181,8 +181,9 @@ class WifiClient:
             if "x00" in cell.ssid:
                 continue  # ignore hidden networks
 
-            # Fix UTF-8 characters
-            ssid = literal_eval("b'" + cell.ssid + "'").decode('utf8')
+            # Fix UTF-8 characters (work around bugs in wifi lib, see #42)
+            ssid = cell.ssid.replace("'", "\\'")
+            ssid = literal_eval("b'" + ssid + "'").decode('utf8')
             quality = self.get_quality(cell.quality)
 
             # If there are duplicate network IDs (e.g. repeaters) only
